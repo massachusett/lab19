@@ -81,19 +81,19 @@ let rec cash_aux (amount : int) (limit : int) (bills : int list) (count : int) :
 let deliver_cash (a : int) : unit =
   cash_aux a 4 [100; 50; 20; 10; 5; 1] 0 ;;
   
-let rec get_customer (id : int) (lst : account_spec ref list) : account_spec ref =
+let rec get_customer (id : id) (lst : account_spec ref list) : account_spec ref =
   match lst with
   | [] -> raise Not_found
   | hd :: tl -> if !hd.id = id then hd
                 else get_customer id tl ;;
 
-let get_balance (id : int) : int =
+let get_balance (id : id) : int =
   let {name = n; id = i; balance = b} = !(get_customer id !db) in b ;;
 
-let get_name (id : int) : string =
+let get_name (id : id) : string =
   let {name = n; id = i; balance = b} = !(get_customer id !db) in n ;;
 
-let update_balance (id : int) (bal : int) : account_spec =
+let update_balance (id : id) (bal : int) : unit =
   let account = get_customer id !db in
   let {name = n; id = i; balance = b} = !account in
-  account := {name = n; id = i; balance = bal}; {name = n; id = i; balance = bal} ;;
+  account := {name = n; id = i; balance = bal} ;;
