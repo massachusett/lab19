@@ -45,3 +45,32 @@ let rec acquire_act : unit -> action =
   | _ -> print_string "Invalid action! Try again.";
          print_newline ();
          acquire_act () ;;
+
+let present_message (s : string) : unit =
+  print_string s;
+  print_newline () ;;
+
+let print_bill (bill : int) : unit =
+  let s = "[" ^ (string_of_int bill) ^ " @ " ^ (string_of_int bill) ^ "]" in
+  print_string s ;;
+
+let rec cash_aux (amount : int) (limit : int) (bills : int list) (count : int) : unit =
+  match bills with
+  | [] -> present_message (" and " ^ (string_of_int count) ^ " more")
+  | hd :: tl ->
+    let num_bills = (amount - amount mod hd) / hd in
+    if limit = 0 then
+      cash_aux (amount - num_bills * hd) limit tl (count + num_bills)
+    else if num_bills <= limit then 
+      (for i = 1 to num_bills do
+        print_bill hd
+      done;
+      cash_aux (amount - num_bills * hd) (limit - num_bills) tl count)
+    else 
+      (for i = 1 to limit do
+        print_bill hd
+      done;
+      cash_aux (amount - num_bills * hd) 0 tl (count + num_bills - limit))
+
+let deliver_cash (a : int) : unit =
+  cash_aux a 4 [100; 50; 20; 10; 5; 1] 0 ;;
