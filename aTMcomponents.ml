@@ -1,14 +1,20 @@
+
 type id = int
 
 type action =
-  | Balance           
-  | Withdraw of int   
-  | Deposit of int    
-  | Next              
-  | Finished          
-;; 
+  | Balance
+  | Withdraw of int
+  | Deposit of int
+  | Next
+  | Finished
+;;
 
 type account_spec = {name : string; id : id; balance : int} ;;
+
+let db = ref [] ;;
+
+let initialize (init: account_spec list) : unit =
+  db := List.map (fun x -> ref x) init ;;
 
 let input_to_int (input : string) : int =
   let i = int_of_string input in
@@ -16,7 +22,7 @@ let input_to_int (input : string) : int =
   else i ;;
 
 let rec acquire_id : unit -> id =
-  fun () -> 
+  fun () ->
   print_string "Enter customer id: ";
   let id = read_line () in
   try input_to_int id with
@@ -24,8 +30,8 @@ let rec acquire_id : unit -> id =
   print_newline ();
   acquire_id ()) ;;
 
-let rec acquire_amount : unit -> int = 
-  fun () -> 
+let rec acquire_amount : unit -> int =
+  fun () ->
   print_string "Enter amount: ";
   let id = read_line () in
   try input_to_int id with
@@ -33,13 +39,13 @@ let rec acquire_amount : unit -> int =
   print_newline ();
   acquire_amount ()) ;;
 
-let rec acquire_act : unit -> action = 
-  fun () -> 
+let rec acquire_act : unit -> action =
+  fun () ->
   print_string "Enter action: (B) Balance (-) Withdraw (+) Deposit (=) Done (X) Exit: ";
-  match read_line () with 
-  | "B" -> Balance 
-  | "-" -> Withdraw (acquire_amount ())  
-  | "+" -> Deposit (acquire_amount ())      
+  match read_line () with
+  | "B" -> Balance
+  | "-" -> Withdraw (acquire_amount ())
+  | "+" -> Deposit (acquire_amount ())
   | "=" -> Next
   | "X" -> Finished
   | _ -> print_string "Invalid action! Try again.";
@@ -74,3 +80,20 @@ let rec cash_aux (amount : int) (limit : int) (bills : int list) (count : int) :
 
 let deliver_cash (a : int) : unit =
   cash_aux a 4 [100; 50; 20; 10; 5; 1] 0 ;;
+  
+let rec get_customer (id : int) (lst : account_spec ref list) : account_spec ref =
+  match lst with
+  | [] -> raise Not_found
+  | hd :: tl -> if !hd.id = id then hd
+                else get_customer id tl ;;
+
+let get_balance (id : int) : int =
+  let {name = n; id = i; balance = b} = !(get_customer id !db) in b ;;
+
+let get_name (id : int) : string =
+  let {name = n; id = i; balance = b} = !(get_customer id !db) in n ;;
+
+let update_balance (id : int) (bal : int) : account_spec =
+  let account = get_customer id !db in
+  let {name = n; id = i; balance = b} = !account in
+  account := {name = n; id = i; balance = bal}; {name = n; id = i; balance = bal} ;;
